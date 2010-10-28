@@ -5,7 +5,7 @@ Maintainer: Nikolay Bryskin <nbryskin@yandex-team.ru>
 Build-Depends: debhelper (>= 7), python-support, python (>= 2.6), cdbs
 Standards-Version: 3.9.1
 
-Package: python-initd
+Package: python-config
 Architecture: all
 Depends: ${python:Depends}, ${misc:Depends}, python-argparse
 Description: python module for unify config file parsing,
