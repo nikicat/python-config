@@ -89,7 +89,7 @@ class config_parser(argparse.ArgumentParser):
                 config_file.write('{0} = {1} # {2}\n'.format(key, value, help))
 
     def init_logging(self):
-        logging.basicConfig(level=self.options.log_level.isdigit() and int(self.options.log_level) or self.options.log_level,
+        logging.basicConfig(level=self.options.log_level.isdigit() and int(self.options.log_level) or logging.getLevelName(self.options.log_level),
                     format=self.options.log_format,
                     filename=self.options.log_file or None,
                     filemode='w')
