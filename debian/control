@@ -1,0 +1,13 @@
+Source: python-config
+Section: python
+Priority: extra
+Maintainer: Nikolay Bryskin <nbryskin@yandex-team.ru>
+Build-Depends: debhelper (>= 7), python-support, python (>= 2.6), cdbs
+Standards-Version: 3.9.1
+
+Package: python-initd
+Architecture: all
+Depends: ${python:Depends}, ${misc:Depends}, python-argparse
+Description: python module for unify config file parsing,
+ command line parsing, user supplied options parsing, 
+ automatic config file generation, some other good features.
