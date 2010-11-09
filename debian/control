@@ -8,6 +8,7 @@ Standards-Version: 3.9.1
 Package: python-config
 Architecture: all
 Depends: ${python:Depends}, ${misc:Depends}, python-argparse
+Replaces: python-initd
 Description: python module for unify config file parsing,
  command line parsing, user supplied options parsing, 
  automatic config file generation, some other good features.
