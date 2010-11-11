@@ -22,7 +22,7 @@ class config_parser(argparse.ArgumentParser):
     def parse(self, **kwargs):
         # 1. set defaults
         self.add_argument('--config', default='/etc/{0}.conf'.format(self.name), help='config file path')
-        self.add_argument('--log-file', default='', help='log file path or None for stderr')
+        self.add_argument('--log-file', default='/dev/null', help='log file path')
         self.add_argument('--log-level', default='INFO', help='log level; supported values: {0} or number'.format(', '.join(map(logging.getLevelName, range(0, 51, 10)))))
         self.add_argument('--log-format', default='%(asctime)s:%(levelname)s:%(name)s:%(message)s', help='log format')
         self.add_argument('--gen-config', type=int, default=0, help='generate config and exit')
