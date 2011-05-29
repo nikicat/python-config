@@ -5,9 +5,11 @@ Created on Oct 26, 2010
 '''
 
 import os
+import os.path
 import sys
 import argparse
 import logging
+import logging.handlers
 
 class config_parser(argparse.ArgumentParser):
     '''
@@ -24,7 +26,8 @@ class config_parser(argparse.ArgumentParser):
         self.add_argument('--config', default='/etc/{0}.conf'.format(self.name), help='config file path')
         self.add_argument('--log-file', default=None, help='log file path')
         self.add_argument('--log-level', default='INFO', help='log level; supported values: {0} or number'.format(', '.join(map(logging.getLevelName, range(0, 51, 10)))))
-        self.add_argument('--log-format', default='%(asctime)s:%(levelname)s:%(name)s:%(message)s', help='log format')
+        self.add_argument('--log-format', default='%(module)s[%(process)d]: %(name)s: %(message)s', help='log format')
+        self.add_argument('--syslog-facility', default=None, help='syslog facility')
         self.add_argument('--gen-config', type=int, default=0, help='generate config and exit')
 
         # 2. parse kwargs
@@ -81,7 +84,7 @@ class config_parser(argparse.ArgumentParser):
 
     def genconfig(self):
         with open(self.options.config, 'a') as config_file:
-            config_file.write('# pyamod config file\n\n')
+            config_file.write('# {0} config file\n\n'.format(os.path.basename(sys.argv[0])))
             for key, value in sorted(self.options.__dict__.items(), key=lambda (k, v): k):
                 if key in ['config', 'gen_config']:
                     continue
@@ -89,7 +92,20 @@ class config_parser(argparse.ArgumentParser):
                 config_file.write('{0} = {1} # {2}\n'.format(key, value, help))
 
     def init_logging(self):
-        logging.basicConfig(level=self.options.log_level.isdigit() and int(self.options.log_level) or logging.getLevelName(self.options.log_level),
-                    format=self.options.log_format,
-                    filename=self.options.log_file or None,
-                    filemode='w')
+        handlers = []
+        if self.options.syslog_facility is not None:
+            handlers.append(logging.handlers.SysLogHandler('/dev/log', self.options.syslog_facility))
+        if self.options.log_file is not None:
+            handlers.append(logging.FileHandler(self.options.log_file))
+        if self.options.log_file is None and self.options.syslog_facility is None:
+            handlers.append(logging.StreamHandler())
+        formatter = logging.Formatter(self.options.log_format)
+        level = self.options.log_level.isdigit() and int(self.options.log_level) or logging.getLevelName(self.options.log_level)
+        logging.root.setLevel(level)
+        if logging.root.handlers:
+            for handler in logging.root.handlers[:]:
+                logging.root.removeHandler(handler)
+        for handler in handlers:
+            handler.setLevel(level)
+            handler.setFormatter(formatter)
+            logging.root.addHandler(handler)

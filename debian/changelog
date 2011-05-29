@@ -1,3 +1,10 @@
+python-config (0.0.2) lucid; urgency=low
+
+  * syslog support
+  * remove all previously added root handlers in init_logging
+
+ -- Nikolay Bryskin <nbryskin@yandex-team.ru>  Tue, 15 Mar 2011 22:20:53 +0300
+
 python-config (0.0.1) maverick; urgency=low
 
   * initial release
