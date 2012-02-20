@@ -1,3 +1,9 @@
+python-config (0.0.3) natty; urgency=low
+
+  * added conf.d support
+
+ -- Nikolay Bryskin <nbryskin@yandex-team.ru>  Fri, 23 Sep 2011 17:22:15 +0400
+
 python-config (0.0.2) lucid; urgency=low
 
   * syslog support

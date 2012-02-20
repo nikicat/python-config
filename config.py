@@ -24,6 +24,7 @@ class config_parser(argparse.ArgumentParser):
     def parse(self, **kwargs):
         # 1. set defaults
         self.add_argument('--config', default='/etc/{0}.conf'.format(self.name), help='config file path')
+        self.add_argument('--config-dir', default='/etc/{0}.conf.d'.format(self.name), help='config directory path')
         self.add_argument('--log-file', default=None, help='log file path')
         self.add_argument('--log-level', default='INFO', help='log level; supported values: {0} or number'.format(', '.join(map(logging.getLevelName, range(0, 51, 10)))))
         self.add_argument('--log-format', default='%(module)s[%(process)d]: %(name)s: %(message)s', help='log format')
@@ -39,36 +40,37 @@ class config_parser(argparse.ArgumentParser):
 
         # 3. parse config file
         self.parse_known_args(namespace=self.options)
-        if os.access(self.options.config, os.R_OK):
-            COMMENT_CHAR = '#'
-            OPTION_CHAR =  '='
-            ALT_OPTION_CHAR =  ' '
-            with open(self.options.config) as f:
-                line_number = 0
-                for line in f:
-                    line_number += 1
-                    # First, remove comments:
-                    if COMMENT_CHAR in line:
-                        # split on comment char, keep only the part before
-                        line = line.split(COMMENT_CHAR, 1)[0]
-                    line = line.strip()
-                    # Second, find lines with an key=value:
-                    if OPTION_CHAR in line:
-                        key, value = line.split(OPTION_CHAR, 1)
-                    elif ALT_OPTION_CHAR in line:
-                        key, value = line.split(ALT_OPTION_CHAR, 1)
-                    else:
-                        continue
-                    # strip spaces:
-                    key = key.strip()
-                    value = value.strip()
-                    # store in dictionary:
-                    actions = [action for action in self._actions if action.dest == key]
-                    if len(actions) == 0:
-                        self.error('unknown key in config file {0}:{1}: {2}'.format(self.options.config, line_number, key))
-                    if actions[0].type is not None:
-                        value = actions[0].type(value)
-                    setattr(self.options, key, value)
+        COMMENT_CHAR = '#'
+        OPTION_CHAR =  '='
+        ALT_OPTION_CHAR =  ' '
+        for config_file in [self.options.config] + [os.path.join(self.options.config_dir, fname) for fname in (os.path.isdir(self.options.config_dir) and os.listdir(self.options.config_dir) or [])]:
+            if os.access(config_file, os.R_OK):
+                with open(config_file) as f:
+                    line_number = 0
+                    for line in f:
+                        line_number += 1
+                        # First, remove comments:
+                        if COMMENT_CHAR in line:
+                            # split on comment char, keep only the part before
+                            line = line.split(COMMENT_CHAR, 1)[0]
+                        line = line.strip()
+                        # Second, find lines with an key=value:
+                        if OPTION_CHAR in line:
+                            key, value = line.split(OPTION_CHAR, 1)
+                        elif ALT_OPTION_CHAR in line:
+                            key, value = line.split(ALT_OPTION_CHAR, 1)
+                        else:
+                            continue
+                        # strip spaces:
+                        key = key.strip()
+                        value = value.strip()
+                        # store in dictionary:
+                        actions = [action for action in self._actions if action.dest == key]
+                        if len(actions) == 0:
+                            self.error('unknown key in config file {0}:{1}: {2}'.format(config_file, line_number, key))
+                        if actions[0].type is not None:
+                            value = actions[0].type(value)
+                        setattr(self.options, key, value)
 
         # 4. parse command line
         self.parse_args(namespace=self.options)
